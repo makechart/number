@@ -1,0 +1,20 @@
+div
+  div(plug="layout")
+    .pdl-layout
+      div(data-type="layout")
+        .pdl-cell(data-name="number")
+        .pdl-cell(data-name="unit")
+      div(data-type="render")
+  style(type="text/css"): :stylus
+    .pdl-layout > [data-type=layout]
+      flex-direction: column
+      display: flex
+      align-items: center
+      justify-content: center
+      .pdl-cell
+        line-height: 1em
+        white-space: nowrap
+      .pdl-cell[data-name=number]
+        font-weight: bold
+
+  script(type="@plotdb/block"): include:lsc index.ls
