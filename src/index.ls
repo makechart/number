@@ -1,14 +1,16 @@
 module.exports =
   pkg:
     name: 'number', version: '0.0.1'
-    extend: {name: "@makechart/base"}
+    # lite: 不帶 d3 的 base ( 見 @plotdb/chart utils )
+    extend: {name: "@makechart/base", path: "lite/index.html"}
     dependencies: []
 
   init: ({root, context, pubsub}) ->
     pubsub.fire \init, {mod: mod {context}} .then ~> it.0
 
 mod = ({context}) ->
-  {d3,ldcolor,repeatString$,infinite} = context
+  {ldcolor} = context
+  svgns = "http://www.w3.org/2000/svg"
   sample: ->
     raw: [{val: 12777216, name: "票房", unit: "新臺幣"}]
     binding:
@@ -22,17 +24,16 @@ mod = ({context}) ->
     unit: {type: \N, name: "unit"}
   init: ->
     @n = Object.fromEntries <[number unit]>.map ~> [it, @layout.get-node(it)]
-    @g = Object.fromEntries <[number unit]>.map ~> [it, d3.select(@layout.get-group it)]
-    @g.number.append \text
-    @g.unit.append \text
+    @g = Object.fromEntries <[number unit]>.map ~> [it, @layout.get-group it]
+    @t = Object.fromEntries <[number unit]>.map ~> [it, @g[it].appendChild document.createElementNS(svgns, \text)]
     @v = number: 0, unit: '', run: 0
 
   resize: ->
     [w,h] = [@box.width, @box.height]
     @size-rate = number: (@cfg.number-size-rate or 3), unit: (@cfg.unit-size-rate or 1)
     @v <<< do
-      number: (@data.0 or {value: 0}).value
-      unit: @binding.value.unit or (@data.0 or {unit: ''}).unit or ''
+      number: +((@data.0 or {}).value) or 0
+      unit: (@binding.value or {}).unit or (@data.0 or {unit: ''}).unit or ''
     @n.number
       ..style.fontSize = "#{@size-rate.number}em"
       ..textContent = @v.number
@@ -46,21 +47,21 @@ mod = ({context}) ->
     @layout.update false
 
   tick: ->
-    @g.number.select \text .text ~>
-      @v.run = (@v.number - @v.run) * 0.1 + @v.run
-      if @v.run == @v.number => @stop!
-      return Math.round(@v.run)
+    # 每格往目標靠 10% ( 以格數計, 錄影時跟著 anim 的 step 走 )
+    @v.run = (@v.number - @v.run) * 0.1 + @v.run
+    if @v.run == @v.number => @stop!
+    @t.number.textContent = Math.round(@v.run)
 
   render: ->
-    @g.number.select \text
-      .attr \x, (@n.number.getBoundingClientRect!width / 2)
-      .attr \font-size, "#{@size-rate.number * @r.number}em"
-      .attr \font-weight, \bold
-      .attr \dominant-baseline, \hanging
-      .attr \text-anchor, \middle
-      .text Math.round(@v.run)
-    @g.unit.select \text
-      .attr \font-size, "#{@size-rate.unit * @r.unit}em"
-      .attr \dominant-baseline, \hanging
-      .text @v.unit
+    @t.number
+      ..setAttribute \x, (@n.number.getBoundingClientRect!width / 2)
+      ..setAttribute \font-size, "#{@size-rate.number * @r.number}em"
+      ..setAttribute \font-weight, \bold
+      ..setAttribute \dominant-baseline, \hanging
+      ..setAttribute \text-anchor, \middle
+      ..textContent = Math.round(@v.run)
+    @t.unit
+      ..setAttribute \font-size, "#{@size-rate.unit * @r.unit}em"
+      ..setAttribute \dominant-baseline, \hanging
+      ..textContent = @v.unit
     @start!
