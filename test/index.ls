@@ -2,7 +2,7 @@
 mk = (val, unit) ->
   raw: [{val, name: "票房", unit: \新臺幣}]
   binding: {name: {key: \name}, value: {key: \val} <<< (if unit => {unit} else {})}
-# 數字每格往目標靠 10%, 約 400 格才完全停下. lite 版推 anim 的時鐘, d3 版等真實時間
+# 數字每 1/60 秒往目標靠 10%, 差不到 0.5 就停 ( 12777216 約 170 格 ). lite 版推 anim 的時鐘, d3 版等真實時間
 settle = (c, ctx) ->
   if c.anim => for i from 0 til 600 => c.anim.step 16
   else ctx.wait 11000
@@ -23,6 +23,14 @@ mctest.suite do
     # 沒有綁 value 時不該丟錯, 顯示 0
     * name: "no-value", data: \novalue, steps: settle
     * name: "update", data: \small, steps: [settle, ((c) -> d = mk 9876; c.set-raw d.raw, d.binding), settle]
+    # 逼近到位後要停掉 tick 的迴圈 ( 以前用 == 判斷, 永遠停不下來 )
+    * name: "settle-stops", data: \nounit
+      steps:
+        * settle
+        * (c) -> if c._aniloop.is-running! or c.v.run != c.v.number => throw new Error "tick loop still running"
+    # 不滾動: 一開始就是終值, 不跑 tick
+    * name: "no-tween", data: \big, config: {tween: false}
+      steps: (c) -> if c._aniloop.is-running! => throw new Error "tick loop running with tween off"
 
 # lite 版才有: 數字滾動的中間格
 mctest.suite do

@@ -18,6 +18,8 @@ mod = ({context}) ->
       value: {key: \val, unit: '百萬元新臺幣'}
   config:
     enlarge: type: \boolean, default: false
+    # 數字從 0 滾到目標值. 系統設定減少動態 ( prefers-reduced-motion ) 時一律不滾
+    tween: type: \boolean, default: true
   dimension:
     value: {type: \R, name: "value"}
     name: {type: \N, name: "name"}
@@ -46,13 +48,20 @@ mod = ({context}) ->
     @n.unit.style.fontSize = "#{@size-rate.unit * r.unit}em"
     @layout.update false
 
-  tick: ->
-    # 每格往目標靠 10% ( 以格數計, 錄影時跟著 anim 的 step 走 )
-    @v.run = (@v.number - @v.run) * 0.1 + @v.run
-    if @v.run == @v.number => @stop!
+  tick: (t, dt) ->
+    # 以時間計: 每 1/60 秒往目標靠 10%, 更新率不同的螢幕速度一樣.
+    # dt 是 chart 給的 ( 錄影時跟著 anim 的 step 走 ), 第一格與 seek 時是 0, 不推進
+    if !(dt > 0) => return
+    @v.run += (@v.number - @v.run) * (1 - Math.pow(0.9, dt * 60 / 1000))
+    # 逼近永遠不會剛好等於目標. 差不到半個單位時顯示的整數已經一樣, 直接收尾並停掉迴圈
+    if Math.abs(@v.number - @v.run) < 0.5 =>
+      @v.run = @v.number
+      @stop!
     @t.number.textContent = Math.round(@v.run)
 
   render: ->
+    tween = @cfg.tween != false and !(window.matchMedia and matchMedia('(prefers-reduced-motion: reduce)').matches)
+    if !tween => @v.run = @v.number
     @t.number
       ..setAttribute \x, (@n.number.getBoundingClientRect!width / 2)
       ..setAttribute \font-size, "#{@size-rate.number * @r.number}em"
@@ -64,4 +73,4 @@ mod = ({context}) ->
       ..setAttribute \font-size, "#{@size-rate.unit * @r.unit}em"
       ..setAttribute \dominant-baseline, \hanging
       ..textContent = @v.unit
-    @start!
+    if tween and @v.run != @v.number => @start! else @stop!
