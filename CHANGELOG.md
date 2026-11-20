@@ -1,5 +1,17 @@
 # Change Logs
 
+## v0.0.3
+
+ - fix bug: the rolling number never stopped its tick loop. it approaches the target asymptotically and
+   never becomes exactly equal, so `stop` was never called and `requestAnimationFrame` kept running.
+   it now snaps to the target and stops once within 0.5 ( the displayed integer is already the same )
+ - rolling speed is time based ( 10% of the remaining distance per 1/60 s, using `dt` from `mod.tick` )
+   instead of per frame, so it no longer runs faster on high refresh rate screens
+ - add `tween` config ( default true ). the number shows the final value directly when `tween` is
+   false or when `prefers-reduced-motion: reduce` is set
+ - add `settle-stops` / `no-tween` test cases
+
+
 ## v0.0.2
 
  - extend the lite base ( `@makechart/base` `lite/index.html`, no d3 ): needs `@makechart/base` >= 0.2.0
