@@ -7,6 +7,15 @@ settle = (c, ctx) ->
   if c.anim => for i from 0 til 600 => c.anim.step 16
   else ctx.wait 11000
 
+# 數字與單位 ( 疊起來 ) 都在圖的範圍內
+fits = (c, ctx) ->
+  b = ctx.root.getBoundingClientRect!
+  h = <[number unit]>.reduce ((a, k) -> a + c.n[k].getBoundingClientRect!height), 0
+  if h > b.height + 0.5 => throw new Error "數字加單位高 #{h}px, 超過圖的 #{b.height}px"
+  <[number unit]>.map (k) ->
+    r = c.n[k].getBoundingClientRect!
+    if r.width > b.width + 0.5 => throw new Error "#k 寬 #{r.width}px, 超過圖的 #{b.width}px"
+
 mctest.suite do
   size: [400, 240]
   data:
@@ -20,6 +29,9 @@ mctest.suite do
     * name: "unit-from-data", data: \nounit, steps: settle
     * name: "enlarge", data: \small, config: {enlarge: true}, steps: settle
     * name: "narrow", data: \big, size: [160, 120], steps: settle
+    # 矮的容器 ( 儀表板的 KPI 列 ): 數字加單位要放得進高度, 不能只看寬度
+    * name: "short", data: \big, size: [400, 50], steps: [settle, fits]
+    * name: "short:enlarge", data: \small, size: [400, 40], config: {enlarge: true}, steps: [settle, fits]
     # 沒有綁 value 時不該丟錯, 顯示 0
     * name: "no-value", data: \novalue, steps: settle
     * name: "update", data: \small, steps: [settle, ((c) -> d = mk 9876; c.set-raw d.raw, d.binding), settle]

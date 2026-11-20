@@ -44,8 +44,13 @@ mod = ({context}) ->
       ..textContent = @v.unit
     @r = r = Object.fromEntries <[number unit]>.map ~> [it, (w / (@n[it]getBoundingClientRect!width or 1))]
     (if !@cfg.enlarge => <[number unit]> else <[unit]>).map ~> @r[it] = (r[it] <? 1)
-    @n.number.style.fontSize = "#{@size-rate.number * r.number}em"
-    @n.unit.style.fontSize = "#{@size-rate.unit * r.unit}em"
+    set-size = ~> <[number unit]>.map ~> @n[it].style.fontSize = "#{@size-rate[it] * r[it]}em"
+    set-size!
+    # 高度: 數字加單位疊起來超過繪圖區就一起縮 ( 寬度只決定上限 ), 兩個方向都要放得下
+    hh = <[number unit]>.reduce ((a, k) ~> a + @n[k].getBoundingClientRect!height), 0
+    if h > 0 and hh > h =>
+      <[number unit]>.map -> r[it] *= h / hh
+      set-size!
     @layout.update false
 
   tick: (t, dt) ->
