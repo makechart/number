@@ -1,5 +1,13 @@
 # Change Logs
 
+## v0.0.4
+
+ - fix bug: font size was fitted to the width only, so in a short container ( e.g. a KPI row in a dashboard )
+   the number and unit overflowed and got clipped. when the stacked number + unit is taller than the chart,
+   both now shrink together to fit the height too ( also with `enlarge` )
+ - add `short`, `short:enlarge` test cases
+
+
 ## v0.0.3
 
  - fix bug: the rolling number never stopped its tick loop. it approaches the target asymptotically and
