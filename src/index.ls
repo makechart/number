@@ -17,9 +17,9 @@ mod = ({context}) ->
       name: {key: \name}
       value: {key: \val, unit: '百萬元新臺幣'}
   config:
-    enlarge: type: \boolean, default: false
+    enlarge: type: \boolean, default: false, desc: {en: "let the number grow past its normal size to fill the width; off only shrinks it when it doesn't fit", "zh-TW": "讓數字放大到填滿寬度；關閉時只在放不下時縮小"}
     # 數字從 0 滾到目標值. 系統設定減少動態 ( prefers-reduced-motion ) 時一律不滾
-    tween: type: \boolean, default: true
+    tween: type: \boolean, default: true, desc: {en: "roll the number up to its value instead of showing it at once; always off when the system asks for reduced motion", "zh-TW": "數字以滾動方式跑到目標值，而非直接顯示；系統設定減少動態時一律不滾"}
   dimension:
     value: {type: \R, name: "value"}
     name: {type: \N, name: "name"}

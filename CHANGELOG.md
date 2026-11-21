@@ -1,5 +1,9 @@
 # Change Logs
 
+## v0.0.5
+
+ - add `desc` ( en / zh-TW ) to the config items, shown under the label in the makechart style panel
+
 ## v0.0.4
 
  - fix bug: font size was fitted to the width only, so in a short container ( e.g. a KPI row in a dashboard )
